@@ -11,7 +11,6 @@ export default class {
 
         this.zlconnect_api_host = "5g4liysz1a.execute-api.ap-northeast-1.amazonaws.com";
         this.zlconnect_getMedia_api_host = "fdkbt1h252.execute-api.ap-northeast-1.amazonaws.com";
-        // this.zlconnect_api_channel_id = "1656867165";
         this.zlconnect_api_stage = "api";
     }
 
@@ -371,4 +370,51 @@ export default class {
         });
     }
 
+    // 署名付きURLの発行
+    getPresignedUrl(user_id, fileExtension) {
+        return new Promise((resolve, reject) => {
+            let req_data = {
+                "data": JSON.stringify({
+                    "company_id": this.company_id,
+                    "channel_id": this.channel_id,
+                    "user_id": user_id,
+                    "fileExtension": fileExtension
+                }),
+                "timeout": 0,
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "method": "POST",
+                "url": `https://${this.zlconnect_api_host}/${this.zlconnect_api_stage}/getpresignedurl`,
+            };
+
+            $.ajax(req_data).done(function(data) {
+                resolve(data);
+            }).fail(function(data){
+                reject(data);
+            });
+        });
+    }
+
+    uploadFile(presignedUrl, file, contentType) {
+        return new Promise((resolve, reject) => {
+            let req_data = {
+                "data": file,
+                "headers": {
+                    "Content-Type": contentType
+                },
+                "method": "PUT",
+                "url": presignedUrl,
+                "processData": false,
+                "contentType": false
+            };
+            $.ajax(req_data).done(function(data) {
+                resolve(data);
+            }).fail(function(data){
+                console.log("ERROR!!!!!")
+                console.log(data);
+                reject();
+            });
+        });
+    }
 }

@@ -908,7 +908,7 @@
     </div>
   </div>
   <div v-if="!isSelectedFile" class="d-flex align-items-center w-100">
-    <textarea class="flex-fill me-1 rounded" rows="1" v-model="message" @keyup="resizeTextarea"></textarea>
+    <textarea id="message" class="flex-fill me-1 rounded" rows="1" v-model="message" @keyup="resizeTextarea" @paste="resizeTextareaPaste"></textarea>
     <div class="bg-white rounded-1">
       <button id="send-message-button" class="btn btn-sm btn-light" @click="sendMessage" :disabled="isDisabledSendButton || isSending">
         <span class="spinner-border spinner-border-sm" :class="{active: isSending}" role="status" aria-hidden="true"></span>
@@ -928,7 +928,15 @@ export default {
     sendChat: {
       type: Function,
       required: true
-    }
+    },
+    getPresignedUrl: {
+      type: Function,
+      required: true
+    },
+    uploadFile: {
+      type: Function,
+      required: true
+    },
   },
   setup(props){
     const isSelectSticker = ref(false);
@@ -942,6 +950,7 @@ export default {
     const inputFileName = ref("");
     const inputFileData = ref(null);
     const isActive = ref('1');
+    const originalFile = ref("");
 
     watch(message, () => {
       if(validateMessage()){
@@ -963,6 +972,11 @@ export default {
       }
     }
 
+    // ペーストされた際は、5行に固定
+    const resizeTextareaPaste = (event) => {
+      event.target.rows = 5;
+    }
+
     const sendMessage = async () => {
       isSending.value = true;
       await props.sendChat(message.value, 'text').catch((err) => {
@@ -970,6 +984,8 @@ export default {
       });
       isSending.value = false;
       message.value = '';
+      // テキストエリアの行数をリセット
+      document.getElementById("message").rows = 1;
     }
 
     // スタンプボタン押下時イベント
@@ -1027,7 +1043,8 @@ export default {
       isSelectSticker.value = false;
     }
 
-    const selectedFile = (event) => {
+    // const selectedFile = (event) => {
+    const selectedFile = async (event) => {
       const file = event.target.files[0];
       const reader = new FileReader();
 
@@ -1036,38 +1053,49 @@ export default {
         isSelectedFile.value = true;
         inputFileName.value = file.name;
         isFileIconHover.value = false;
+        originalFile.value = file;
       });
 
       if (file) {
         const fileType = file.type.split("/")[0];
+        console.log("file",file);
+        // ファイルサイズ上限を10MBに変更
         if(fileType == "image"){
           // 画像ファイルサイズは8MB以下
-          if(file.size <= 8388608){
+          // if(file.size <= 8388608){
+          if(file.size <= 10485760){
             reader.readAsDataURL(file);
           }else{
-            window.alert("送信できる画像のファイルサイズは8MBまでです");
+            // window.alert("送信できる画像のファイルサイズは8MBまでです");
+            window.alert("送信できる画像のファイルサイズは10MBまでです");
           }
         }else if(fileType == "video"){
           // 動画ファイルサイズは8MB以下
-          if(file.size <= 8388608){
+          // if(file.size <= 8388608){
+          if(file.size <= 10485760){
             reader.readAsDataURL(file);
           }else{
-            window.alert("送信できる動画のファイルサイズは8MBまでです");
+            // window.alert("送信できる動画のファイルサイズは8MBまでです");
+            window.alert("送信できる動画のファイルサイズは10MBまでです");
           }
           console.log(file.size)
         }else if(fileType == "audio"){
           // 動画ファイルサイズは8MB以下
-          if(file.size <= 8388608){
+          // if(file.size <= 8388608){
+          if(file.size <= 10485760){
             reader.readAsDataURL(file);
           }else{
-            window.alert("送信できる動画のファイルサイズは8MBまでです");
+            // window.alert("送信できる動画のファイルサイズは8MBまでです");
+            window.alert("送信できる動画のファイルサイズは10MBまでです");
           }
           console.log(file.size)
         }else if(fileType == "application"){
-          if(file.size <= 8388608){
+          // if(file.size <= 8388608){
+          if(file.size <= 10485760){
             reader.readAsDataURL(file);
           }else{
-            window.alert("送信できるPDFのファイルサイズは8MBまでです");
+            // window.alert("送信できるPDFのファイルサイズは8MBまでです");
+            window.alert("送信できるPDFのファイルサイズは10MBまでです");
           }
         }else{
           window.alert("送信できるファイルの拡張子は .png .jpg .mp4 .pdf .mp3 です");
@@ -1077,9 +1105,23 @@ export default {
     const sendFile = async () => {
       const fileType = inputFileData.value.slice(inputFileData.value.indexOf(':') + 1, inputFileData.value.indexOf('/'));
       isSending.value = true;
-      await props.sendChat(inputFileData.value, fileType, inputFileData.value).catch((err) => {
-        console.error(err);
-      });
+      // ファイルサイズが6MBを超えている場合
+      if(originalFile.value.size >= 6291456){
+          // presignedUrlを用いてS3にアップロードし、送信
+          const fileExtension = originalFile.value.type.split("/")[1];
+          const presignedUrl = await props.getPresignedUrl(fileExtension);
+          const contentType = inputFileData.value.toString().slice(inputFileData.value.indexOf(':') + 1, inputFileData.value.indexOf(';'));
+          await props.uploadFile(presignedUrl, originalFile.value, contentType);
+          const fileUrl = presignedUrl.split("?")[0]
+          await props.sendChat(inputFileData.value, fileType, fileUrl).catch((err) => {
+            console.error(err);
+          });       
+      }else {
+        console.log(inputFileData.value);
+        await props.sendChat(inputFileData.value, fileType, inputFileData.value).catch((err) => {
+          console.error(err);
+        });          
+      }
       isSending.value = false;
       inputFile.value.value = "";
       inputFileData.value = null;
@@ -1110,6 +1152,7 @@ export default {
       isSelectedFile,
       message,
       resizeTextarea,
+      resizeTextareaPaste,
       sendMessage,
       isFileIconHover,
       selectedFile,

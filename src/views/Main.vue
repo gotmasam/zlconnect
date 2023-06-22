@@ -25,7 +25,7 @@
       :contentScroll="contentScroll"
       :openPreview="openPreview"></Balloon>
   </div>
-  <Footer :sendChat="sendChat"></Footer>
+  <Footer :sendChat="sendChat" :getPresignedUrl="getPresignedUrl" :uploadFile="uploadFile"></Footer>
   <Preview v-show="previewInfo.isShow" :closePreview="closePreview" :class="terminal" :type="previewInfo.tag" :src="previewInfo.src" />
   <!-- アラート表示 -->
   <div id="alert-wrapper">
@@ -102,7 +102,8 @@ export default {
     // LINEチャットログ
     const chatLogs = ref([]);
     //LINE既読時間
-    const last_read_time = ref("0");
+    // const last_read_time = ref("0");
+    const last_read_time = ref(dayjs().format("YYYY-MM-DD HH:mm:ss.SSS"));
     //取得した一番古いLINEチャットの時間
     const oldest_chat_time = ref(dayjs().format("YYYY-MM-DD HH:mm:ss.SSS"));
     // ZohoLINEの契約企業ID
@@ -219,6 +220,18 @@ export default {
         router.push({name: 'Error', params: { message: err.message }});
       }
     };
+
+    const getPresignedUrl = async (fileExtension) => {
+      const presignedUrl = await ZLC.getPresignedUrl(lineUserId.value, fileExtension);
+      return presignedUrl.contentUploadUrl;
+    }
+
+    const uploadFile = async (presignedUrl, file) => {
+      console.log("file", file);
+      await ZLC.uploadFile(presignedUrl, file).catch((err) => {
+        console.error(err);
+      });
+    }
 
     const sendChat = async (message, type, file=null) => {
       // メッセージ送信
@@ -610,6 +623,8 @@ export default {
       content,
       chatLogs,
       sendChat,
+      getPresignedUrl,
+      uploadFile,
       getNewLINEChatData,
       getOldLINEChatData,
       toggleAutoReload,
