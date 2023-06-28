@@ -4,7 +4,7 @@
     <div :class="{active: !isContentLoaded && (type === 'image' || type === 'video')}" class="spinner-border" role="status">
       <span class="visually-hidden">読込中...</span>
     </div>
-    <p v-if="type === 'text'" class="message padding-balloon">{{ message }}</p>
+    <p v-if="type === 'text'" class="message padding-balloon" v-html="autoLink(message)"></p>
     <img v-else-if="type === 'sticker'" :src="url" @load="contentLoaded" class="sticker">
     <img v-else-if="type === 'image'" :src="url" @load="contentLoaded" @click="clickedImage">
     <video v-else-if="type === 'video'" :src="url + '#t=0.001'" @loadedmetadata="contentLoaded" controls playsinline></video>
@@ -84,6 +84,11 @@ export default {
       }, 0);
     }
 
+    const autoLink = (message) => {
+    console.log(message);
+    return message.replace(/(https?:\/\/[^\s]*)/g, "<a href='$1' target='_blank'>$1</a>");
+    }
+
     //画像クリック時に別タブで画像を開く
     const clickedImage = (event) => {
       props.openPreview(event.target.tagName.toLowerCase(), event.target.src);
@@ -95,6 +100,7 @@ export default {
       clickedImage,
       isContentLoaded,
       contentLoaded,
+      autoLink,
     }
   }
 }
@@ -140,11 +146,22 @@ img, video {
   color: #fff;
   background-color: var(--bs-accent);
 }
-
+.balloon.right p >>> a {
+  color: #fff;
+  background-color: var(--bs-accent);
+}
 .balloon.right a:hover {
 	color:#C0C0C0; 	/*リンクにマウスが乗ったら背景色を変更する*/
 }
-
+.balloon.right p >>> a:hover {
+	color:#C0C0C0; 	/*リンクにマウスが乗ったら背景色を変更する*/
+}
+.balloon.left a:hover {
+	color:#2d38bb; 	/*リンクにマウスが乗ったら背景色を変更する*/
+}
+.balloon.left p >>> a:hover {
+	color:#2d38bb; 	/*リンクにマウスが乗ったら背景色を変更する*/
+}
 .balloon.left p {
   color: #000;
   background-color: #fff;
