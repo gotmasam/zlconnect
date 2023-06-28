@@ -10,6 +10,8 @@
     <video v-else-if="type === 'video'" :src="url + '#t=0.001'" @loadedmetadata="contentLoaded" controls playsinline></video>
     <audio v-else-if="type === 'audio'" :src="url" controls></audio>
     <a v-else-if="type === 'application'" :href="url" class="message padding-balloon" target="_blank" rel="noopener noreferrer">{{ url }}</a>
+    <img v-else-if="type === 'richMessage'" :src="url" @load="contentLoaded" @click="clickedImage">
+    <video v-else-if="type === 'richVideoMessage'" :src="url + '#t=0.001'" @loadedmetadata="contentLoaded" controls playsinline></video>
     <span class="timestamp text-muted mx-1">{{ tStamp }}</span>
   </div>
 </template>

@@ -78,11 +78,13 @@ export default {
     };
     const CHAT_TYPE_OBJ = {
       0: "text",
-      1: "sticker",     // スタンプ
-      2: "image",       // 画像
-      3: "video",       // 動画
-      4: "audio",       // 音声
-      5: "application"  // PDF
+      1: "sticker",         // スタンプ
+      2: "image",           // 画像
+      3: "video",           // 動画
+      4: "audio",           // 音声
+      5: "application",     // PDF
+      6: "richMessage",     // リッチメッセージ
+      7: "richVideoMessage" // リッチビデオメッセージ
     };
     const AUTO_RELOAD_INTERVAL = 1 * 1000;
     // ZohoLINEクラス
