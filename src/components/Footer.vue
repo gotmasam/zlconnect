@@ -1103,10 +1103,13 @@ export default {
       }
     }
     const sendFile = async () => {
+      console.log("inputFileData", inputFileData.value);
+      const buffer = Buffer.from(inputFileData.value.substring(inputFileData.value.indexOf(',') + 1));
       const fileType = inputFileData.value.slice(inputFileData.value.indexOf(':') + 1, inputFileData.value.indexOf('/'));
       isSending.value = true;
       // ファイルサイズが6MBを超えている場合
-      if(originalFile.value.size >= 6291456){
+      // if(originalFile.value.size >= 6291456){
+      if(buffer.length >= 6291456){
           // presignedUrlを用いてS3にアップロードし、送信
           const fileExtension = originalFile.value.type.split("/")[1];
           const presignedUrl = await props.getPresignedUrl(fileExtension);
@@ -1117,7 +1120,6 @@ export default {
             console.error(err);
           });       
       }else {
-        console.log(inputFileData.value);
         await props.sendChat(inputFileData.value, fileType, inputFileData.value).catch((err) => {
           console.error(err);
         });          
