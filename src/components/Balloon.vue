@@ -12,6 +12,7 @@
     <a v-else-if="type === 'application'" :href="url" class="message padding-balloon" target="_blank" rel="noopener noreferrer">{{ url }}</a>
     <img v-else-if="type === 'richMessage'" :src="url" @load="contentLoaded" @click="clickedImage">
     <video v-else-if="type === 'richVideoMessage'" :src="url + '#t=0.001'" @loadedmetadata="contentLoaded" controls playsinline></video>
+    <div v-else-if="type === 'flexMessage'" class="message flexMessage" v-html="chatbotBaloon(url, title, message)"></div>
     <span class="timestamp text-muted mx-1">{{ tStamp }}</span>
   </div>
 </template>
@@ -37,6 +38,9 @@ export default {
     speaker: {
       type: String,
       required: true
+    },
+    title:{
+      type: String
     },
     message: {
       type: String
@@ -89,6 +93,45 @@ export default {
     return message.replace(/(https?:\/\/[^\s]*)/g, "<a href='$1' target='_blank'>$1</a>");
     }
 
+    const chatbotBaloon = (url, title, message) => {
+      const html = `<div class="kv-flex-bubble kilo pc border border-secondary" style="width: 16.25em;">
+          <div class="kv-flex-bubble-content">
+            <div class="flex-hero">
+              <div class="kv-flex-image fit full" >
+                <div style="width: 100%; background-color: rgb(255, 255, 255);">
+                  <img style="width: 100%;" src=${url}>
+              </div>
+            </div>
+            <div  class="flex-body has-footer">
+              <div class="kv-flex-box vertical"  style="flex-direction: column; padding: 13px 13px 17px;">
+                <div class="kv-flex-text multiline" style="color: rgb(0, 0, 0); font-size: 1em; font-weight: 700; top: -3px; text-align:left;">
+                  <div>${title}</div>
+                </div>
+                <div class="kv-flex-text multiline" style="color: rgb(85, 85, 85); font-size: 0.875em; text-align:left;">
+                  <div>${message}</div>
+                </div>
+              </div>
+            </div>
+            <!--
+            // TODO：アクションボタンの表示は要検討
+            <div class="kv-flex-separator" style="border-color: rgb(229, 229, 229);"></div>
+            <div  class="flex-footer">
+              <div class="kv-flex-box vertical"  style="flex-direction: column; padding: 0px;">
+                <div class="kv-flex-box vertical" style="flex-direction: column; padding-top: 14px; padding-bottom: 13px;">
+                  <div class="kv-flex-box vertical" style="cursor: pointer; flex-direction: column; height: 30px; justify-content: center;">
+                    <div class="kv-flex-text" style="color: rgb(66, 101, 154); text-align: center; font-size: 0.9375em;">
+                      <div >詳しくはこちら！</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            --!>
+          </div>
+        </div>`;
+      return html;
+    }
+
     //画像クリック時に別タブで画像を開く
     const clickedImage = (event) => {
       props.openPreview(event.target.tagName.toLowerCase(), event.target.src);
@@ -101,6 +144,7 @@ export default {
       isContentLoaded,
       contentLoaded,
       autoLink,
+      chatbotBaloon
     }
   }
 }
@@ -119,6 +163,10 @@ export default {
 .balloon.right {
   margin-right: 15px;
   flex-flow: row-reverse;
+}.balloon.right .flexMessage {
+  color: #111111;
+  background-color: #fff;
+  border: 1px solid var(--vps-main-theme);
 }
 p,a {
   max-width: 60%; /*最大幅は任意*/

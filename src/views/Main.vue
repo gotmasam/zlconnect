@@ -17,6 +17,7 @@
       :chatId="chat.chatId"
       :type="chat.type"
       :speaker="chat.speaker"
+      :title="chat.title"
       :message="chat.message"
       :url="chat.url"
       :timestamp="chat.timestamp"
@@ -84,7 +85,8 @@ export default {
       4: "audio",           // 音声
       5: "application",     // PDF
       6: "richMessage",     // リッチメッセージ
-      7: "richVideoMessage" // リッチビデオメッセージ
+      7: "richVideoMessage", // リッチビデオメッセージ
+      8: "flexMessage"
     };
     const AUTO_RELOAD_INTERVAL = 1 * 1000;
     // ZohoLINEクラス
@@ -396,6 +398,7 @@ export default {
           chatId: chat.chat_id,
           speaker: USER_TYPE_OBJ[chat.user_type],
           type: CHAT_TYPE_OBJ[chat.chat_type],
+          title: chat.title,
           message: chat.text,
           // url: chat.media_url ? ZLC.getMediaURL(chat.media_url) : null,
           // url: chat.media_url ? ZLC.getMedia(chat.media_url) : null,
@@ -403,8 +406,8 @@ export default {
           timestamp: chat.sent_at,
           isFirstLoad: true
         });
-        console.log("LINE取得");
-        console.log(chat.sent_at);
+        // console.log("LINE取得");
+        // console.log(chat.sent_at);
         updateChatReadTime(chat.sent_at);
       }
       updateChatLogs(lineChatArray);
@@ -429,6 +432,7 @@ export default {
             chatId: chat.chat_id,
             speaker: USER_TYPE_OBJ[chat.user_type],
             type: CHAT_TYPE_OBJ[chat.chat_type],
+            title: chat.title,
             message: chat.text,
             // url: chat.media_url ? ZLC.getMedia(chat.media_url) : null,
             url: url,
@@ -469,6 +473,7 @@ export default {
           chatId: chat.chat_id,
           speaker: USER_TYPE_OBJ[chat.user_type],
           type: CHAT_TYPE_OBJ[chat.chat_type],
+          title: chat.title,
           message: chat.text,
           // url: chat.media_url ? ZLC.getMedia(chat.media_url) : null,
           url: url,
